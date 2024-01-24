@@ -29,29 +29,25 @@ public class RingBuffer {
     }
 
     public void put(int val) throws InterruptedException {
-        occupied.acquire();
-        synchronized (this) {
-            mem[in++] = val;
-            in %= mem.length;
-            stored++;
-        }
-        free.release();
+        free.acquire();
+        mem[in++] = val;
+        in %= mem.length;
+        stored++;
+        occupied.release();
     }
 
     public int get() throws InterruptedException {
-        free.acquire();
+        occupied.acquire();
         int val;
-        synchronized (this) {
-            val = mem[out++];
-            out %= mem.length;
-            stored--;
-        }
-        occupied.release();
+        val = mem[out++];
+        out %= mem.length;
+        stored--;
+        free.release();
         return val;
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         int freePermits = free.availablePermits();
         int occupiedPermits = occupied.availablePermits();
         free.drainPermits();
@@ -79,5 +75,46 @@ public class RingBuffer {
         free.release(freePermits);
         occupied.release(occupiedPermits);
         return sb.toString();
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        RingBuffer bf = new RingBuffer(4);
+
+        Thread p = new Thread() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 25; i++) {
+                    try {
+                        bf.put(i);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
+            }
+        };
+
+        Thread g = new Thread() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 25; i++) {
+                    try {
+                        int v = bf.get();
+                        System.out.println(v);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+
+                }
+            }
+        };
+
+        p.start();
+        g.start();
+        p.join();
+        g.join();
+
+        System.out.println(bf);
     }
 }
