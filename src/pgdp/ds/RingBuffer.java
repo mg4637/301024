@@ -52,6 +52,11 @@ public class RingBuffer {
 
     @Override
     public String toString() {
+        int freePermits = free.availablePermits();
+        int occupiedPermits = occupied.availablePermits();
+        free.drainPermits();
+        occupied.drainPermits();
+
         StringBuilder sb = new StringBuilder();
         sb.append("RingBuffer := { capacity = ").append(mem.length).append(", out = ").append(out).append(", in = ")
                 .append(in).append(", stored = ").append(stored).append(", mem = ").append(Arrays.toString(mem))
@@ -70,6 +75,9 @@ public class RingBuffer {
             }
         }
         sb.append("] }");
+
+        free.release(freePermits);
+        occupied.release(occupiedPermits);
         return sb.toString();
     }
 }
