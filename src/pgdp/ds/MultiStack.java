@@ -13,6 +13,7 @@ public class MultiStack {
 
     public void push(int val) {
         stacks.push(val);
+
     }
 
     public int pop() {

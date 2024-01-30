@@ -18,6 +18,7 @@ public class RingBuffer {
         out = 0;
         stored = 0;
         free = new Semaphore(capacity);
+
     }
 
     public boolean isEmpty() {

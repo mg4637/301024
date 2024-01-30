@@ -15,6 +15,7 @@ public class Stack {
         mem = new int[capacity];
         top = -1;
         this.lock = lock;
+
     }
 
     public boolean isEmpty() {
